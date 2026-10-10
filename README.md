@@ -1,167 +1,167 @@
-# PowerShell Commands
+# PowerShell Scripting Labs
 
-## About This Repository
+## About This Repo
 
-This repository is a beginner-friendly reference for **Windows PowerShell** commands. It covers the cmdlets used most often for navigating the file system, managing files, working with processes and services, and doing basic network troubleshooting.
+This repo has the **commands and scripts** from my PowerShell Scripting course labs. They are sorted *week by week*, so each folder holds one lab.
 
-PowerShell is a *cross-platform task automation solution* made up of a command-line shell, a scripting language, and a configuration management framework. It runs on **Windows**, **Linux**, and **macOS**.
+Every file has comments that explain what each command does, so you can read along even if you are new to PowerShell.
 
-> PowerShell is built on .NET, so it works with *objects* rather than plain text.
+> **Lab setup:** a Windows Server 2022 VM on Hyper-V at `192.168.1.20`.
 >
-> Each command passes rich, structured data down the pipeline!
+> I control it from my Windows host using **PowerShell Remoting**. The domain is `saksham.powershell.com`.
 
 ---
 
-## Table of Contents
+## Weekly Files
 
-1. [What is PowerShell?](#what-is-powershell)
-2. [Getting Started](#getting-started)
-3. [Command Reference](#command-reference)
-    1. [Navigation](#navigation)
-    2. [File and Folder Management](#file-and-folder-management)
-    3. [Processes and Services](#processes-and-services)
-    4. [Networking](#networking)
-4. [Cmdlet vs. Alias Cheat Sheet](#cmdlet-vs-alias-cheat-sheet)
-5. [Learning Checklist](#learning-checklist)
-6. [Resources](#resources)
+| Week | Topic | Files |
+|:-----|:-----:|------:|
+| 01 | Basics, help system, PS Remoting | [week01-commands.ps1](week-01-intro-help-remoting/week01-commands.ps1) |
+| 02 | Variables & arrays | [week02-commands.ps1](week-02-variables-arrays/week02-commands.ps1) |
+| 03 | Active Directory: OUs, users, bulk CSV import | [week03-commands.ps1](week-03-adds-users/week03-commands.ps1), [AddNewUser.ps1](week-03-adds-users/AddNewUser.ps1), [Users.csv](week-03-adds-users/Users.csv) |
+| 04 | Excel automation with ImportExcel | [week04-commands.ps1](week-04-importexcel/week04-commands.ps1) |
 
 ---
 
-## What is PowerShell?
+## Week 01: Basics, Help & Remoting
 
-PowerShell commands are called **cmdlets** (pronounced *"command-lets"*). Every cmdlet follows a **Verb-Noun** naming pattern, which makes commands easy to guess and remember.
+This week was about the **first steps**: running a script, finding commands, and getting help.
 
-Common verbs include:
+### What I did
 
-- `Get` – retrieves information
-- `Set` – changes a value or setting
-- `New` – creates something new
-- `Remove` – deletes something
-- `Start` / `Stop` – controls processes and services
-    - `Start-Process` – launches an application
-    - `Stop-Process` – ends a running application
+1. Wrote my first script, which prints `Hello World!`
+2. Checked the execution policy with `Get-ExecutionPolicy -List`
+3. Played with dates and wrote a small function
+    1. `Get-Date -Format hh:mm:ss` shows only the time
+    2. `get-time` is my own function that wraps `Get-Date`
+4. Found commands with `Get-Module` and `Get-Command`
+5. Used `Start-Process` with `.WaitForExit()` so the script *waits* for Notepad to close
 
-> **Tip:** Not sure what a command does? Use `Get-Help <cmdlet-name>` to read its documentation.
+### The help system
 
----
+- `Get-Help Format-Table` shows basic help
+    - `-Detailed` and `-Full` show more
+    - `-Examples` shows only examples
+    - `-Online` opens the web page
+- `Get-Help about_*` lists the topic articles
+- `Save-Help` saves help files to a folder
 
-## Getting Started
+### Remoting
 
-Follow these steps to open PowerShell and run your first command:
-
-1. Press `Win + X` on your keyboard.
-2. Select **Windows PowerShell** or **Terminal**.
-3. Check your PowerShell version:
-    1. Type `$PSVersionTable`
-    2. Press **Enter**
-4. Allow local scripts to run (optional, requires *Administrator*):
-    1. Run `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
-    2. Type `Y` to confirm
+- `Test-WsMan` checks that the server can be reached
+- `Invoke-Command` runs one command on the server
+- `Enter-PSSession` opens a live session on the server
 
 ---
 
-## Command Reference
+## Week 02: Variables & Arrays
 
-### Navigation
+A **variable** stores a value. An **array** stores a list of values.
 
-| Command | Description | Example |
-|:--------|:-----------:|--------:|
-| `Get-Location` | Shows the current directory | `Get-Location` |
-| `Set-Location` | Changes the current directory | `Set-Location C:\Users` |
-| `Get-ChildItem` | Lists files and folders | `Get-ChildItem -Force` |
-| `Push-Location` | Saves the current location and moves | `Push-Location C:\Temp` |
-| `Pop-Location` | Returns to the saved location | `Pop-Location` |
+### Variables
 
-### File and Folder Management
+- Saved process data in a variable, then filtered it with `Where-Object` and sorted it with `Sort-Object`
+- Learned the difference between *loose* and *strong* typing
+    - `2 + 2` gives `4`, but `'2' + '2'` gives `22` (text is joined)
+    - `[int]$num1 = '2.6'` turns the value into a whole number
+- Single quotes `'...'` print text as it is, while double quotes `"..."` fill in variables
+- `Get-Variable` lists all variables and `$env:COMPUTERNAME` reads an environment variable
 
-| Command | Description | Example |
-|:--------|:-----------:|--------:|
-| `New-Item` | Creates a file or folder | `New-Item -Path .\Notes -ItemType Directory` |
-| `Copy-Item` | Copies a file or folder | `Copy-Item .\a.txt .\backup\a.txt` |
-| `Move-Item` | Moves or renames an item | `Move-Item .\a.txt .\b.txt` |
-| `Remove-Item` | Deletes a file or folder | `Remove-Item .\old.txt` |
-| `Get-Content` | Reads the contents of a file | `Get-Content .\log.txt -Tail 10` |
-| `Set-Content` | Writes (overwrites) file contents | `Set-Content .\a.txt "Hello World!"` |
-| `Add-Content` | Appends text to a file | `Add-Content .\a.txt "New line"` |
+### Arrays
 
-### Processes and Services
+- Made arrays with `@('Apples','Oranges','Bananas')`
+- Picked items by index: `$data[0]`, `$data[1..3]` and `$data[-1]`
+- Used array operators:
+    - `-join` joins items into one string
+    - `-contains` checks if an item is in the list
+    - `-eq` and `-ne` filter items
+- Tried typed arrays, `ArrayList`, and nested arrays
 
-| Command | Description | Example |
-|:--------|:-----------:|--------:|
-| `Get-Process` | Lists running processes | `Get-Process -Name notepad` |
-| `Start-Process` | Starts a program | `Start-Process notepad` |
-| `Stop-Process` | Stops a running process | `Stop-Process -Name notepad` |
-| `Get-Service` | Lists Windows services | `Get-Service -Name Spooler` |
-| `Restart-Service` | Restarts a service | `Restart-Service -Name Spooler` |
+### Use cases
 
-### Networking
-
-| Command | Description | Example |
-|:--------|:-----------:|--------:|
-| `Test-Connection` | Pings a remote host | `Test-Connection google.com -Count 4` |
-| `Get-NetIPAddress` | Shows IP address configuration | `Get-NetIPAddress -AddressFamily IPv4` |
-| `Test-NetConnection` | Tests a port on a remote host | `Test-NetConnection google.com -Port 443` |
-| `Resolve-DnsName` | Looks up DNS records | `Resolve-DnsName github.com` |
-
-#### Example: Sample Subnet Plan
-
-The table below shows how networking information might be documented when testing connectivity with `Test-Connection`:
-
-|Subnet | Network Address | Broadcast Address | Default Gateway|
-|:--------|:--------------------:|:----------------------:|--------------------:|
-|SN1 | 192.168.1.0 | 192.168.1.127 | 192.168.1.1 |
-|SN2 | 192.168.1.128 | 192.168.1.255 | 192.168.1.129 |
+1. A script that finds files bigger than **100 MB**
+2. A script that removes duplicates from a list of failed backup servers
 
 ---
 
-## Cmdlet vs. Alias Cheat Sheet
+## Week 03: Active Directory with PowerShell
 
-Many cmdlets have short **aliases** that match familiar *CMD* or *Linux* commands:
+This week I created an **OU** and **users** in Active Directory, first by hand and then from a CSV file.
 
-| Cmdlet | PowerShell Alias | CMD Equivalent | Linux Equivalent |
-|:-------|:----------------:|:--------------:|-----------------:|
-| `Get-ChildItem` | `gci`, `ls`, `dir` | `dir` | `ls` |
-| `Set-Location` | `cd`, `sl` | `cd` | `cd` |
-| `Copy-Item` | `cp`, `copy` | `copy` | `cp` |
-| `Move-Item` | `mv`, `move` | `move` | `mv` |
-| `Remove-Item` | `rm`, `del` | `del` | `rm` |
-| `Get-Content` | `cat`, `gc` | `type` | `cat` |
-| `Clear-Host` | `cls`, `clear` | `cls` | `clear` |
+### Steps
 
-> **Note:** Use `Get-Alias` to see every alias available in your session.
+1. Connected to the domain controller with `New-PSSession` and `Enter-PSSession`
+2. Created the `Department-IT` OU with `New-ADOrganizationalUnit`
+3. Created users by hand with `New-ADUser`
+    1. `User15` with basic settings
+    2. `User6` with city, country and department
+4. Copied `Users.csv` and `AddNewUser.ps1` to the server with `Copy-Item -ToSession`
+5. Ran `AddNewUser.ps1` to create **10 users** from the CSV
 
----
+### Users in the CSV
 
-## Working with the Pipeline
+| First Name | Last Name | User Name |
+|:-----------|:---------:|----------:|
+| John | Doe | jdoe |
+| Jane | Smith | jsmith |
+| Michael | Brown | mbrown |
+| Emily | Davis | edavis |
+| David | Wilson | dwilson |
+| Sarah | Taylor | staylor |
+| Chris | Anderson | canderson |
+| Laura | Thomas | lthomas |
+| Daniel | White | dwhite |
+| Olivia | Martin | omartin |
 
-The pipeline (`|`) sends the output of one command into the next. A few useful examples:
+### About `AddNewUser.ps1`
 
-- Show the 5 processes using the most memory:
-    - `Get-Process | Sort-Object WS -Descending | Select-Object -First 5`
-- List only the services that are running:
-    - `Get-Service | Where-Object Status -eq 'Running'`
-- Export a process list to a CSV file:
-    - `Get-Process | Export-Csv .\processes.csv -NoTypeInformation`
+- Reads every row in `Users.csv`
+- Creates each user in the `Department-IT` OU
+- *Skips* users that already exist, so it is safe to run again
+- Makes users change their password at first logon
 
----
-
-## Learning Checklist
-
-- [x] Open PowerShell and check the version
-- [x] Navigate folders with `Set-Location` and `Get-ChildItem`
-- [x] Create, copy, move, and delete files
-- [ ] Manage processes and services
-- [ ] Use the pipeline to filter and sort output
-- [ ] Write and run a first `.ps1` script
-
----
-
-## Resources
-
-- [Microsoft PowerShell Documentation](https://learn.microsoft.com/en-us/powershell/)
-- [PowerShell GitHub Repository](https://github.com/PowerShell/PowerShell)
-- [Markdown Guide – Basic Syntax](https://www.markdownguide.org/basic-syntax/)
+> **Lesson learned:** save the file in Notepad *before* copying it.
+>
+> My first copy was a 0-byte file, and it failed without showing any error!
 
 ---
 
-*Created by* **Saksham Sain**
+## Week 04: Excel with ImportExcel
+
+The server has **no internet** and **no Excel**, but the `ImportExcel` module still lets PowerShell read and write `.xlsx` files.
+
+### Steps
+
+1. Copied `Fruits.xlsx` from the host to the server
+2. Installed the module *offline*
+    1. Ran `Save-Module -Name ImportExcel` on the host
+    2. Copied the folder to `C:\Program Files\WindowsPowerShell\Modules` on the server
+3. Read data with `Import-Excel` and saved data with `Export-Excel`
+4. Imported only some columns and rows with `-ImportColumns`, `-StartRow` and `-EndRow`
+5. Added new sheets with `-Append`
+6. Added formatting with `-TableStyle` and `-Title`
+7. Made a chart with `New-ExcelChartDefinition`
+8. Copied the files back to the host with `Copy-Item -FromSession`
+
+---
+
+## Progress Checklist
+
+- [x] Week 01: Basics, help system, PS Remoting
+- [x] Week 02: Variables & arrays
+- [x] Week 03: Active Directory users
+- [x] Week 04: Excel automation
+- [ ] Week 05: coming soon
+
+---
+
+## Useful Links
+
+- [PowerShell Documentation](https://learn.microsoft.com/en-us/powershell/)
+- [New-ADUser Documentation](https://learn.microsoft.com/en-us/powershell/module/activedirectory/new-aduser)
+- [ImportExcel Module on GitHub](https://github.com/dfinke/ImportExcel)
+- [Markdown Guide: Basic Syntax](https://www.markdownguide.org/basic-syntax/)
+
+> ⚠️ The password in these scripts (`P@ssw0rd`) is only for the lab. Never use it on a real system.
+
+*Made by* **Saksham Sain**
